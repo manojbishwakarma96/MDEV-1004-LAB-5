@@ -4,11 +4,14 @@ const verifyToken = (req, res, next) => {
   const token = req.headers["authorization"];
 
   if (!token) {
-    return res.status(403).json({ message: "No token provided" });
+    return res
+      .status(403)
+      .json({ message: "A token is required for authentication" });
   }
 
   try {
-    const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
+    const bearerToken = token.split(" ")[1];
+    const decoded = jwt.verify(bearerToken, process.env.TOKEN_KEY);
     req.user = decoded;
     next();
   } catch (err) {
