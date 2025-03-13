@@ -1,8 +1,13 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const connectDB = require("./database/db");
 const routes = require("./routes/routes");
 
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
+
 const app = express();
 
 app.use(express.json());
