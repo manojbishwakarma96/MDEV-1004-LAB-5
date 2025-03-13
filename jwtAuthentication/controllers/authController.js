@@ -5,19 +5,22 @@ const User = require("../models/models");
 // Register Controller
 const register = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { firstName, lastName, email, username, password } = req.body;
 
     // Validate input
-    if (!(username && password)) {
+    if (!(firstName && lastName && email && username && password)) {
       return res.status(400).json({ message: "All input fields are required" });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ username });
+    // Check if user already exists (by email or username)
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res
-        .status(409)
-        .json({ message: "User already exists. Please login" });
+      return res.status(409).json({
+        message:
+          existingUser.email === email
+            ? "Email already registered"
+            : "Username already taken",
+      });
     }
 
     // Hash the password
@@ -25,13 +28,22 @@ const register = async (req, res) => {
 
     // Create new user
     const user = await User.create({
-      username: username,
+      firstName,
+      lastName,
+      email: email.toLowerCase(),
+      username,
       password: hashedPassword,
     });
 
     // Create token
     const token = jwt.sign(
-      { user_id: user._id, username },
+      {
+        user_id: user._id,
+        username,
+        firstName,
+        lastName,
+        email,
+      },
       process.env.TOKEN_KEY,
       { expiresIn: "2h" }
     );
@@ -72,7 +84,13 @@ const login = async (req, res) => {
 
     // Create token
     const token = jwt.sign(
-      { user_id: user._id, username },
+      {
+        user_id: user._id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
       process.env.TOKEN_KEY,
       { expiresIn: "2h" }
     );
@@ -88,7 +106,7 @@ const login = async (req, res) => {
 const dashboard = (req, res) => {
   try {
     res.status(200).json({
-      message: `Welcome to the dashboard, ${req.user.username}`,
+      message: `Welcome to the dashboard, ${req.user.firstName} ${req.user.lastName}`,
       user: req.user,
     });
   } catch (error) {
