@@ -1,12 +1,14 @@
-const http = require('http');
-const routes = require('./routes/routes');
-const server = http.createServer(routes);
-require('dotenv').config();
+const express = require("express");
+const dotenv = require("dotenv");
+const routes = require("./routes/routes");
 
-const { API_PORT} = process.env;
-const port = process.env.PORT || API_PORT;
+dotenv.config();
+const app = express();
 
-server.listen(port,()=>{
-    console.log(`Server is running on port ${port}`);
+app.use(express.json());
+app.use("/api", routes);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
-
