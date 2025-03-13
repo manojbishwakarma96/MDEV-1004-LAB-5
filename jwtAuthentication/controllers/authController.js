@@ -48,9 +48,23 @@ const register = async (req, res) => {
       { expiresIn: "2h" }
     );
 
+    // Get token details
+    const decodedToken = jwt.decode(token);
+
     res.status(201).json({
       message: "User created successfully",
       token: token,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        username: user.username,
+      },
+      tokenInfo: {
+        iat: decodedToken.iat,
+        exp: decodedToken.exp,
+      },
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -95,7 +109,24 @@ const login = async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    res.status(200).json({ token });
+    // Get token details
+    const decodedToken = jwt.decode(token);
+
+    res.status(200).json({
+      message: "Login successful",
+      token: token,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        username: user.username,
+      },
+      tokenInfo: {
+        iat: decodedToken.iat,
+        exp: decodedToken.exp,
+      },
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Error logging in", error: error.message });
